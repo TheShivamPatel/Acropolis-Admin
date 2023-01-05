@@ -32,7 +32,7 @@ public class UploadNotice extends AppCompatActivity {
     FirebaseDatabase mDatabase;
     DatabaseReference mRef;
     FirebaseStorage mStorage;
-    private static final int Gallery_Code = 1;
+    private static final int GALLERY_CODE = 1;
     Uri imageUrl = null;
 
     @Override
@@ -44,25 +44,30 @@ public class UploadNotice extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance();
         mRef = mDatabase.getReference().child("NoticeNode");
         mStorage = FirebaseStorage.getInstance();
-        dialog  = new ProgressDialog(UploadNotice.this);
+        dialog = new ProgressDialog(UploadNotice.this);
         dialog.setMessage("uploading...");
 
         binding.noticeImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                startActivityForResult(intent , Gallery_Code);
+                openFileChosser();
             }
         });
 
+    }
+
+    private void openFileChosser(){
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(intent, GALLERY_CODE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == Gallery_Code && resultCode == RESULT_OK){
+        if (requestCode == GALLERY_CODE && resultCode == RESULT_OK) {
             imageUrl = data.getData();
             binding.noticeImage.setImageURI(imageUrl);
         }
@@ -71,10 +76,8 @@ public class UploadNotice extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String fn = binding.noticeTxt.getText().toString().trim();
-                if (!(fn.isEmpty() && imageUrl!= null)){
-
+                if (!(fn.isEmpty() && imageUrl != null)) {
                     dialog.show();
-
                     StorageReference filepath = mStorage.getReference().child("NoticeFolder").child(imageUrl.getLastPathSegment());
                     filepath.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -88,7 +91,7 @@ public class UploadNotice extends AppCompatActivity {
                                     newPost.child("date").setValue(currentDate);
                                     newPost.child("notice").setValue(fn);
                                     newPost.child("image").setValue(task.getResult().toString());
-                                    Toast.makeText(UploadNotice.this , "Uploaded" , Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(UploadNotice.this, "Uploaded", Toast.LENGTH_SHORT).show();
 
                                     binding.noticeImage.setImageResource(R.drawable.upload);
                                     binding.noticeTxt.setText("");
@@ -103,8 +106,9 @@ public class UploadNotice extends AppCompatActivity {
 
     }
 
-    private String getToadaysDate(){
-        return new SimpleDateFormat("dd/MM/yyyy",Locale.getDefault()).format(new Date());
+    @NonNull
+    private String getToadaysDate() {
+        return new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
     }
 
 }
